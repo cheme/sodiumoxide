@@ -4,6 +4,9 @@ rust:
 - beta
 - nightly
 sudo: false
+matrix:
+  allow_failures:
+  - rust: nightly
 install:
 - wget https://github.com/jedisct1/libsodium/releases/download/1.0.15/libsodium-1.0.15.tar.gz
 - tar xvfz libsodium-1.0.15.tar.gz
@@ -30,3 +33,7 @@ env:
   global:
     - GH_REF: github.com/dnaq/sodiumoxide.git
     - secure: LFhOKKRNMdfsU4bUKLi+9ly5l0mrvnL9rS0M33aEyvCoeTiptuHsOCoSxZMk4iH5dA3IGQX+q6BjQlB5o/W4svSeOFfTvvXQ7QgqIoWqO0a9kAstVDZFTFM7xGMbI9jrihH4mHeT4dZdN779Mbnhg3tynbNapB+0ewA+cz3Wb5s=
+
+branches:
+    except:
+    - /.*(.tmp)$/

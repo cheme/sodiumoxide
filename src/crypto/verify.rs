@@ -12,7 +12,7 @@ use ffi;
 /// timing attacks.
 pub fn verify_16(x: &[u8; 16], y: &[u8; 16]) -> bool {
     unsafe {
-        ffi::crypto_verify_16(x, y) == 0
+        ffi::crypto_verify_16(x.as_ptr(), y.as_ptr()) == 0
     }
 }
 
@@ -27,7 +27,7 @@ pub fn verify_16(x: &[u8; 16], y: &[u8; 16]) -> bool {
 /// timing attacks.
 pub fn verify_32(x: &[u8; 32], y: &[u8; 32]) -> bool {
     unsafe {
-        ffi::crypto_verify_32(x, y) == 0
+        ffi::crypto_verify_32(x.as_ptr(), y.as_ptr()) == 0
     }
 }
 
@@ -42,7 +42,7 @@ pub fn verify_32(x: &[u8; 32], y: &[u8; 32]) -> bool {
 /// timing attacks.
 pub fn verify_64(x: &[u8; 64], y: &[u8; 64]) -> bool {
     unsafe {
-        ffi::crypto_verify_64(x, y) == 0
+        ffi::crypto_verify_64(x.as_ptr(), y.as_ptr()) == 0
     }
 }
 
@@ -68,6 +68,47 @@ mod test {
         }
     }
 
+    quickcheck! {
+        fn qc_verify_16(diff: Vec<usize>) -> bool {
+            use randombytes::randombytes_into;
+
+            ({ // no diff
+                let mut x = [0; 16];
+                let mut y = [0; 16];
+
+                assert!(verify_16(&x, &y));
+                assert!(verify_16(&y, &x));
+
+                randombytes_into(&mut x);
+                y = x;
+
+                verify_16(&x, &y) && verify_16(&y, &x)
+            })
+                &&
+                ({ // add diff according to provided vector
+                    let mut x = [0; 16];
+                    let mut y = [0; 16];
+
+                    assert!(verify_16(&x, &y));
+                    assert!(verify_16(&y, &x));
+
+                    randombytes_into(&mut x);
+                    y = x;
+
+                    for i in &diff[..] {
+                        let i = i % 16;
+                        y[i] = y[i].wrapping_add(1);
+                    }
+
+                    if x == y {
+                        verify_16(&x, &y) && verify_16(&y, &x)
+                    } else {
+                        !verify_16(&x, &y) && !verify_16(&y, &x)
+                    }
+                })
+        }
+    }
+
     #[test]
     fn test_verify_32() {
         use randombytes::randombytes_into;
@@ -86,6 +127,47 @@ mod test {
         }
     }
 
+    quickcheck! {
+        fn qc_verify_32(diff: Vec<usize>) -> bool {
+            use randombytes::randombytes_into;
+
+            ({ // no diff
+                let mut x = [0; 32];
+                let mut y = [0; 32];
+
+                assert!(verify_32(&x, &y));
+                assert!(verify_32(&y, &x));
+
+                randombytes_into(&mut x);
+                y = x;
+
+                verify_32(&x, &y) && verify_32(&y, &x)
+            })
+                &&
+                ({ // add diff according to provided vector
+                    let mut x = [0; 32];
+                    let mut y = [0; 32];
+
+                    assert!(verify_32(&x, &y));
+                    assert!(verify_32(&y, &x));
+
+                    randombytes_into(&mut x);
+                    y = x;
+
+                    for i in &diff[..] {
+                        let i = i % 32;
+                        y[i] = y[i].wrapping_add(1);
+                    }
+
+                    if x == y {
+                        verify_32(&x, &y) && verify_32(&y, &x)
+                    } else {
+                        !verify_32(&x, &y) && !verify_32(&y, &x)
+                    }
+                })
+        }
+    }
+
     #[test]
     fn test_verify_64() {
         use randombytes::randombytes_into;
@@ -101,6 +183,54 @@ mod test {
             } else {
                 assert!(!verify_64(&x, &y))
             }
+        }
+    }
+
+    quickcheck! {
+        fn qc_verify_64(diff: Vec<usize>) -> bool {
+            use randombytes::randombytes_into;
+
+            ({ // no diff
+                let mut x = [0; 64];
+                let mut y = [0; 64];
+
+                assert!(verify_64(&x, &y));
+                assert!(verify_64(&y, &x));
+
+                randombytes_into(&mut x);
+                y = x;
+
+                verify_64(&x, &y) && verify_64(&y, &x)
+            })
+                &&
+                ({ // add diff according to provided vector
+                    let mut x = [0; 64];
+                    let mut y = [0; 64];
+
+                    assert!(verify_64(&x, &y));
+                    assert!(verify_64(&y, &x));
+
+                    randombytes_into(&mut x);
+                    y = x;
+
+                    for i in &diff[..] {
+                        let i = i % 64;
+                        y[i] = y[i].wrapping_add(1);
+                    }
+
+                    let mut same = true;
+                    for i in 0..64 {
+                        if x[i] != y[i] {
+                            same = false;
+                        }
+                    }
+
+                    if same {
+                        verify_64(&x, &y) && verify_64(&y, &x)
+                    } else {
+                        !verify_64(&x, &y) && !verify_64(&y, &x)
+                    }
+                })
         }
     }
 }
