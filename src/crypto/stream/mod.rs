@@ -83,10 +83,10 @@
 //! stream::stream_xor_inplace(plaintext, &nonce, &key);
 //! assert_eq!(plaintext, &mut [0, 1, 2, 3]);
 //! ```
-pub use self::xsalsa20::*;
+//pub use self::xsalsa20::*;
 #[macro_use]
 mod stream_macros;
-pub mod xsalsa20;
-pub mod xchacha20;
+//pub mod xsalsa20;
+//pub mod xchacha20;
 pub mod salsa20;
 pub mod chacha20;
